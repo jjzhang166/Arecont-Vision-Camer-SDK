@@ -1,0 +1,344 @@
+//---------------------------------------------------------------------------
+#pragma hdrstop
+//---------------------------------------------------------------------------
+//#include "GSysConfig.h"
+#include "GUtil.h"
+#include <algorithm>
+#include "GExceptions.h"
+#include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <iostream>
+
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+//---------------------------------------------------------------------------
+
+
+NumberToChar::Conformity::Conformity()
+{
+	array[0] = '0';
+	array[1] = '1';
+	array[2] = '2';
+	array[3] = '3';
+	array[4] = '4';
+	array[5] = '5';
+	array[6] = '6';
+	array[7] = '7';
+	array[8] = '8';
+	array[9] = '9';
+}
+//---------------------------------------------------------------------------
+NumberToChar::Conformity NumberToChar::conformity;
+//---------------------------------------------------------------------------
+char NumberToChar::operator()(unsigned idx)
+{
+	return conformity.array[idx];
+}
+//---------------------------------------------------------------------------
+
+
+std::string ReplaceSymbol(const std::string& line, char ch_old, char ch_new)
+{
+	std::string out;
+	unsigned size = line.size();
+	for(unsigned i = 0; i < size; i++){
+		if(line[i] != ch_old) out += line[i];
+		else out += ch_new;
+	}
+	return out;
+}
+//---------------------------------------------------------------------------
+
+GString ExcludeTrailingBackslash(const GString& str)
+{
+#ifdef _windows_
+	char ch = '\\';
+#endif
+
+#ifdef _linux_
+	char ch = '/';
+#endif
+	std::string::size_type pos = str.find(ch);
+	if(std::string::npos == pos)
+		return str;
+	return str.substr(pos, str.size() - pos);
+}
+//---------------------------------------------------------------------------
+bool CopyFile(const char* dest, const char* source)
+{
+   std::ifstream fin(source, std::ios_base::binary);
+   if(!fin)
+      return false;
+   std::ofstream fout(dest, std::ios_base::binary);
+   if(!fout)
+      return false;
+   char ch;
+   while(fin.get(ch)) fout.put(ch);
+   if(!fin.eof() || !fout)
+      return false;
+   return true;
+}
+//---------------------------------------------------------------------------
+bool CopyFile(const GString& dest, const GString& source)
+{
+   return CopyFile(dest.c_str(), source.c_str());
+}
+//---------------------------------------------------------------------------
+void Invert(char* array, unsigned long size)
+{
+	for(unsigned long i = 0; i < size / 2; i++)
+		std::swap(array[i], array[size-i-1]);
+}
+//---------------------------------------------------------------------------
+long ToLong(const char* str, int radix)
+{
+   char *ptr,
+        **endptr = &ptr;
+   errno = 0;
+   long ret = strtol(str, endptr, radix);
+   if(*endptr != str + strlen(str))
+      throw EGConvert(str);
+   if(errno == ERANGE)
+      throw EGConvert(str);
+   return ret;
+}
+//---------------------------------------------------------------------------
+unsigned long ToUnsignedLong(const char* str, int radix)
+{
+   char *ptr,
+        **endptr = &ptr;
+   errno = 0;
+   unsigned long ret = strtol(str, endptr, radix);
+   if(*endptr != str + strlen(str))
+      throw EGConvert(str);
+   if(errno == ERANGE)
+      throw EGConvert(str);
+   return ret;
+}
+//---------------------------------------------------------------------------
+double ToDouble(const char* str)
+{
+   char *ptr,
+        **endptr = &ptr;
+   errno = 0;
+   double ret = strtod(str, endptr);
+   if(*endptr != str + strlen(str))
+      throw EGConvert(str);
+   if(errno == ERANGE)
+      throw EGConvert(str);
+   return ret;
+}
+//---------------------------------------------------------------------------
+long ToLong(const std::string& str, int radix)
+{
+  return ToLong(str.c_str(), radix);
+}
+//---------------------------------------------------------------------------
+unsigned long ToUnsignedLong(const std::string& str, int radix)
+{
+   return ToUnsignedLong(str.c_str(), radix);
+}
+//---------------------------------------------------------------------------
+double ToDouble(const std::string& str)
+{
+   return ToDouble(str.c_str());
+}
+
+//---------------------------------------------------------------------------
+
+
+
+//---------------------------------------------------------------------------
+std::string ToString(unsigned char number, int radix)
+{
+   return ToString(static_cast<unsigned long>(number), radix);
+}
+
+//---------------------------------------------------------------------------
+std::string ToString(int number)
+{
+   return ToString(static_cast<long>(number));
+}
+
+//---------------------------------------------------------------------------
+std::string ToString(long number)
+{
+   char buff[36];
+   sprintf(buff,(char*)"%d",number);
+   return std::string(buff);
+}
+
+//---------------------------------------------------------------------------
+std::string ToString(unsigned number, int radix)
+{
+   return ToString(static_cast<unsigned long>(number), radix);
+}
+
+//---------------------------------------------------------------------------
+std::string ToString(unsigned long number, int radix)
+{
+   char buff[36];
+   switch(radix){
+   case 8 :
+      sprintf(buff,(char*)"%o",(unsigned int) number);
+      break;
+   case 16 :
+      sprintf(buff,(char*)"%x", (unsigned int)number);
+      break;
+   default :
+      sprintf(buff,(char*)"%u",(unsigned int) number);
+   }
+
+   return std::string(buff);
+}
+
+//---------------------------------------------------------------------------
+std::string ToString(float number)
+{
+   return ToString(static_cast<double>(number));
+}
+//---------------------------------------------------------------------------
+std::string ToString(double number)
+{
+   char buff[36];
+   sprintf(buff, "%f", number);
+   return std::string(buff);
+}
+
+//---------------------------------------------------------------------------
+
+#ifdef _windows_
+//---------------------------------------------------------------------------
+std::wstring ToWString(unsigned char number, int radix)
+{
+   return ToWString(static_cast<unsigned long>(number), radix);
+}
+//---------------------------------------------------------------------------
+std::wstring ToWString(int number, int radix)
+{
+   wchar_t buff[36];
+   return _itow(number, buff, radix);
+}
+//---------------------------------------------------------------------------
+std::wstring ToWString(unsigned number, int radix)
+{
+   return ToWString(static_cast<unsigned long>(number), radix);
+}
+//---------------------------------------------------------------------------
+std::wstring ToWString(long number, int radix)
+{
+   wchar_t buff[36];
+   return _ltow(number, buff, radix);
+}
+//---------------------------------------------------------------------------
+std::wstring ToWString(unsigned long number, int radix)
+{
+   wchar_t buff[36];
+   return _ultow(number, buff, radix);
+}
+//---------------------------------------------------------------------------
+#endif
+
+
+
+long ToLong(const wchar_t* str, int radix)
+{
+   wchar_t *ptr,
+        **endptr = &ptr;
+   errno = 0;
+   long ret = wcstol(str, endptr, radix);
+   if(*endptr != str + wcslen(str))
+      throw EGConvert("wstring is not an integer number");
+   if(errno == ERANGE)
+      throw EGConvert("wstring integer number out of range");
+   return ret;
+}
+//---------------------------------------------------------------------------
+unsigned long ToUnsignedLong(const wchar_t* str, int radix)
+{
+   wchar_t *ptr,
+        **endptr = &ptr;
+   errno = 0;
+   unsigned long ret = wcstol(str, endptr, radix);
+   if(*endptr != str + wcslen(str))
+      throw EGConvert("wstring is not an integer number");
+   if(errno == ERANGE)
+      throw EGConvert("wstring integer number out of range");
+   return ret;
+}
+//---------------------------------------------------------------------------
+double ToDouble(const wchar_t* str)
+{
+   wchar_t *ptr,
+        **endptr = &ptr;
+   errno = 0;
+   double ret = wcstod(str, endptr);
+   if(*endptr != str + wcslen(str))
+      throw EGConvert("wstring is not an floating number");
+   if(errno == ERANGE)
+      throw EGConvert("wstring floating number out of range");
+   return ret;
+}
+//---------------------------------------------------------------------------
+long ToLong(const std::wstring& str, int radix)
+{
+  return ToLong(str.c_str(), radix);
+}
+//---------------------------------------------------------------------------
+unsigned long ToUnsignedLong(const std::wstring& str, int radix)
+{
+   return ToUnsignedLong(str.c_str(), radix);
+}
+//---------------------------------------------------------------------------
+double ToDouble(const std::wstring& str)
+{
+   return ToDouble(str.c_str());
+}
+//---------------------------------------------------------------------------
+
+GErr::GErr()
+{
+   Reset();
+}
+//---------------------------------------------------------------------------
+void GErr::operator()(const char* ds, const char* n, const char* m, int c)
+{
+   err = true;
+   strncpy(description, ds, max - 1);
+   strncpy(name, n, max - 1);
+   strncpy(msg, m, max - 1);
+   code = c;
+}
+//---------------------------------------------------------------------------
+void GErr::Reset()
+{
+   err = code = 0;
+   description[0] = '\0';
+   name[0] = '\0';
+   msg[0] = '\0';
+}
+//---------------------------------------------------------------------------
+
+int RoundAuto(int source, int divisible)
+{
+   int remainder = source % divisible;
+   return remainder >= divisible / 2 + divisible % 2 ? source + divisible - remainder : source - remainder;
+}
+//---------------------------------------------------------------------------
+int RoundUp(int source, int divisible)
+{
+	return source + (divisible - source % divisible) * static_cast<bool>(source % divisible);
+}
+//---------------------------------------------------------------------------
+int RoundDown(int source, int divisible)
+{
+   return source - source % divisible;
+}
+//---------------------------------------------------------------------------
+bool CheckInto(const int min, const int max, int val)
+{
+   return val >= min && val <= max;
+}
+//---------------------------------------------------------------------------

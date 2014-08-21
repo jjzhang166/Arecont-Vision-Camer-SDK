@@ -1,0 +1,1 @@
+g++ -shared -o AV2000SDK.so AV2000Client.cpp ClientInterface.cpp Clients.cpp GException.cpp GIdAddress.cpp GIdBase.cpp GIdBuffer.cpp GIdComponent.cpp GIdDatagram.cpp GIdTFTPBase.cpp GIdTFTPClient.cpp GIdUDPBase.cpp GIdUDPClient.cpp GIdUtils.cpp GMemoryStream.cpp GString.cpp GSysConfig.cpp GUtil.cpp SetCamera.cpp SdkUtils.cpp nalconstructor.cpp -L. 

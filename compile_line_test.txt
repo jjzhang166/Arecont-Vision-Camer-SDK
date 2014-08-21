@@ -1,0 +1,1 @@
+g++ -o test  test.cpp AVLoadSo.cpp -L. -ldl -lpthread 

@@ -1,0 +1,44 @@
+//---------------------------------------------------------------------------
+#pragma hdrstop
+//---------------------------------------------------------------------------
+#include "GException.h"
+#include <string.h>
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+//---------------------------------------------------------------------------
+GException::GException(int cd, unsigned char inf_byte)
+   : code(cd)
+{
+   message[0] = '\0';
+   message[255] = inf_byte;
+}
+//---------------------------------------------------------------------------
+GException::GException(const char* msg)
+   : code(0)
+{
+   strncpy(message, msg, 254);
+   message[255] = 0;
+}
+//---------------------------------------------------------------------------
+GException::GException(int cd, const char* msg, unsigned char inf_byte)
+   : code(cd)
+{
+   strncpy(message, msg, 254);
+   message[255] = inf_byte;
+}
+//---------------------------------------------------------------------------
+const char* GException::what() const throw()
+{
+   return message;
+}
+//---------------------------------------------------------------------------
+int GException::get_code() const
+{
+   return code;
+}
+//---------------------------------------------------------------------------
+unsigned char GException::get_info() const
+{
+   return message[255];
+}
+//---------------------------------------------------------------------------
